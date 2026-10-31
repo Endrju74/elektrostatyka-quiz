@@ -1,0 +1,305 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Elektrostatyka – testy 1–3</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one narrow column on notebook grid; test tabs, question-number strip, one task card at a time */
+:root{
+  --bg:#eef2f6; --grid:#dbe3ec; --card:#ffffff; --fg:#1b2533; --muted:#5d6b7d; --line:#cfd8e3; --soft:#f4f7fa;
+  --plus:#d23b3b; --minus:#2f7fd1; --ok:#1f8a4c; --okbg:#e3f4ea; --bad:#c2361f; --badbg:#fbe6e1;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121821; --grid:#1b2430; --card:#1a2330; --fg:#e6edf5; --muted:#9aa8ba; --line:#2c394a; --soft:#202b39;
+  --plus:#ff6b6b; --minus:#5aa9ff; --ok:#4cd08a; --okbg:#173326; --bad:#ff7a63; --badbg:#3a1d18; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121821; --grid:#1b2430; --card:#1a2330; --fg:#e6edf5; --muted:#9aa8ba; --line:#2c394a; --soft:#202b39;
+  --plus:#ff6b6b; --minus:#5aa9ff; --ok:#4cd08a; --okbg:#173326; --bad:#ff7a63; --badbg:#3a1d18; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:17px/1.5 var(--body);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;min-height:100vh}
+.wrap{max-width:660px;margin:0 auto;padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:14px}
+header{display:flex;align-items:center;gap:12px}
+.charges{display:flex;gap:4px;flex:none}
+.dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 16px/1 var(--display)}
+.dot.p{background:var(--plus)} .dot.m{background:var(--minus)}
+h1{font:800 26px/1.1 var(--display);margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:14px;margin:2px 0 0}
+.xlink{font-size:14px;color:var(--minus);font-weight:700}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs button{border:0;background:transparent;color:var(--muted);font:700 15px/1.2 var(--body);padding:9px 4px;border-radius:9px;cursor:pointer}
+.tabs button small{display:block;font-weight:400;font-size:12px}
+.tabs button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
+.strip{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.strip h2{font:700 17px var(--display);margin:0 8px 0 0;flex-basis:100%}
+.num{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:var(--card);color:var(--fg);font:700 15px var(--body);cursor:pointer;display:grid;place-items:center}
+.num.cur{border-color:var(--fg)}
+.num.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.num.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.qn{display:flex;gap:10px;align-items:flex-start}
+.badge{flex:none;width:30px;height:30px;border-radius:50%;background:var(--minus);color:#fff;display:grid;place-items:center;font:800 16px var(--display)}
+.stem{font-size:18px;line-height:1.45;min-width:0}
+.note{font-size:14px;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 12px}
+.note b{color:var(--fg)}
+.info{border:2px dashed var(--line);border-radius:12px;padding:12px}
+.fig{display:flex;justify-content:center;overflow-x:auto}
+.fig svg{max-width:100%;height:auto}
+.fig text{fill:var(--fg);font-family:var(--body)}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{text-align:left;font:inherit;color:var(--fg);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:11px 14px;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.opt b.k{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:13px}
+.opt.multi b.k{border-radius:7px}
+.opt.sel{border-color:var(--minus)} .opt.sel b.k{background:var(--minus);border-color:var(--minus);color:#fff}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--okbg)} .opt.ok b.k{border-color:var(--ok);background:var(--ok);color:#fff}
+.opt.bad{border-color:var(--bad);background:var(--badbg)} .opt.bad b.k{border-color:var(--bad);background:var(--bad);color:#fff}
+.opt.miss{border-color:var(--ok);border-style:dashed}
+.opt .why{display:block;font-size:14px;color:var(--muted);margin-top:4px}
+.gaptext{font-size:18px;line-height:2.1}
+select{font:inherit;font-size:16px;color:var(--fg);background:var(--bg);border:2px solid var(--minus);border-radius:8px;padding:3px 6px;max-width:100%}
+select.ok{border-color:var(--ok);background:var(--okbg)} select.bad{border-color:var(--bad);background:var(--badbg)}
+.fix{color:var(--ok);font-weight:700;font-size:15px}
+.legend{font-size:15px;color:var(--muted);display:grid;gap:2px}
+.mrow{display:flex;flex-direction:column;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.mrow .t{display:flex;gap:8px}
+.mrow .t b{flex:none;min-width:34px;color:var(--minus)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding-left:42px}
+.chip{font:700 14px var(--body);border:2px solid var(--line);background:var(--bg);color:var(--fg);border-radius:20px;padding:6px 12px;cursor:pointer}
+.chip.sel{border-color:var(--minus);background:var(--minus);color:#fff}
+.chip.ok{border-color:var(--ok);background:var(--ok);color:#fff}
+.chip.bad{border-color:var(--bad);background:var(--bad);color:#fff;text-decoration:line-through}
+.chip.miss{border-color:var(--ok);border-style:dashed;color:var(--ok)}
+.chip:disabled{cursor:default}
+.mrow .why{font-size:14px;color:var(--muted);padding-left:42px}
+.fields{display:flex;flex-direction:column;gap:12px}
+.field{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.field label{flex-basis:100%;font-weight:700;font-size:16px}
+.field input{font:inherit;width:9em;color:var(--fg);background:var(--bg);border:2px solid var(--minus);border-radius:8px;padding:6px 10px}
+.field input.ok,.field select.ok{border-color:var(--ok);background:var(--okbg)}
+.field input.bad,.field select.bad{border-color:var(--bad);background:var(--badbg)}
+.label-w{border:2px solid var(--minus);border-radius:10px;overflow:hidden;max-width:260px;font-size:15px}
+.label-w div:first-child{background:var(--minus);color:#fff;font:700 16px var(--display);padding:6px 10px;letter-spacing:.04em}
+.label-w table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.label-w td{padding:3px 10px}
+.label-w td:last-child{text-align:right}
+.expl{border-left:4px solid var(--ok);padding:10px 12px;background:var(--okbg);border-radius:0 10px 10px 0;font-size:16px}
+.expl.no{border-color:var(--bad);background:var(--badbg)}
+.expl strong{display:block;margin-bottom:2px}
+.expl .corr{display:block;font-weight:700;margin-bottom:4px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{font:700 16px var(--body);border:0;border-radius:12px;padding:12px 18px;cursor:pointer;background:var(--fg);color:var(--bg);flex:1}
+.btn.ghost{background:transparent;color:var(--fg);border:2px solid var(--line)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--minus);outline-offset:2px}
+.score{font:800 56px/1 var(--display);font-variant-numeric:tabular-nums;margin:0}
+.score small{font-size:24px;color:var(--muted)}
+.verdict{font:600 20px var(--display);margin:0}
+sup{font-size:.7em}
+</style></head><body>
+
+<div class="wrap">
+  <header>
+    <div class="charges"><span class="dot p">+</span><span class="dot m">−</span></div>
+    <div><h1>Elektrostatyka · testy</h1><p class="sub">Zadania z podręcznika str. 60–63 · <a class="xlink" href="index.html">← Quiz z pojęć</a></p></div>
+  </header>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="strip" id="strip"></div>
+  <main id="app"></main>
+</div>
+
+<script>
+const E='10<sup>−19</sup>';
+const FIG_ARROWS=`<svg viewBox="0 0 340 170" width="340" aria-label="Rysunek: ciała I i II oraz III i I">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--plus)"/></marker></defs>
+<rect x="30" y="18" width="50" height="46" rx="8" fill="var(--line)"/><text x="48" y="34" font-size="13">I</text>
+<line x1="55" y1="44" x2="128" y2="44" stroke="var(--plus)" stroke-width="2.5" marker-end="url(#ah)"/>
+<path d="M235 20 L262 20 L282 64 L212 64 Z" fill="var(--line)"/><text x="248" y="34" font-size="13">II</text>
+<line x1="245" y1="44" x2="172" y2="44" stroke="var(--plus)" stroke-width="2.5" marker-end="url(#ah)"/>
+<path d="M70 100 L110 100 L125 146 L60 146 Z" fill="var(--line)"/><text x="84" y="114" font-size="13">III</text>
+<line x1="88" y1="124" x2="12" y2="124" stroke="var(--plus)" stroke-width="2.5" marker-end="url(#ah)"/>
+<rect x="210" y="100" width="50" height="46" rx="8" fill="var(--line)"/><text x="228" y="116" font-size="13">I</text>
+<line x1="235" y1="124" x2="320" y2="124" stroke="var(--plus)" stroke-width="2.5" marker-end="url(#ah)"/>
+</svg>`;
+const FIG_BALLS=`<svg viewBox="0 0 220 80" width="220" aria-label="Dwie kule: lewa z większym ładunkiem ujemnym">
+<circle cx="60" cy="40" r="30" fill="var(--line)"/><circle cx="160" cy="40" r="30" fill="var(--line)"/>
+<text x="60" y="34" font-size="16" text-anchor="middle" fill="var(--minus)">− − −</text>
+<text x="60" y="54" font-size="16" text-anchor="middle" fill="var(--minus)">− − −</text>
+<text x="160" y="45" font-size="16" text-anchor="middle" fill="var(--minus)">− −</text></svg>`;
+function scope(x,label,q,neg){return `<g transform="translate(${x},0)">
+<circle cx="50" cy="20" r="9" fill="none" stroke="var(--muted)" stroke-width="2"/>
+<line x1="50" y1="29" x2="50" y2="70" stroke="var(--muted)" stroke-width="2"/>
+<circle cx="50" cy="80" r="42" fill="none" stroke="var(--muted)" stroke-width="2.5"/>
+<path d="M50 70 L30 98 M50 70 L70 98" stroke="var(--fg)" stroke-width="2.5" fill="none"/>
+<rect x="38" y="122" width="24" height="10" fill="var(--muted)"/>
+<text x="6" y="14" font-size="15" font-weight="700">${label}</text>
+<text x="50" y="152" font-size="15" text-anchor="middle" fill="${neg?'var(--minus)':'var(--plus)'}" font-weight="700">${q}</text></g>`}
+const FIG_SCOPES=`<svg viewBox="0 0 330 160" width="330" aria-label="Trzy elektroskopy: I −4 nC, II 4 nC, III −2 nC">${scope(0,'I.','−4 nC',1)}${scope(115,'II.','4 nC',0)}${scope(230,'III.','−2 nC',1)}</svg>`;
+const INFO23=`<div class="info"><b>Informacja do zadań 2 i 3.</b> Poniżej przedstawiono trzy naelektryzowane elektroskopy wraz z wartością ładunków, które się na nich znajdują.<div class="fig">${FIG_SCOPES}</div></div>`;
+const FIG_SPHERES=`<svg viewBox="0 0 300 130" width="300" aria-label="Mała kula −0,2 nC i duża kula 0,8 nC">
+<circle cx="60" cy="72" r="22" fill="var(--line)"/><circle cx="220" cy="55" r="44" fill="var(--line)"/>
+<text x="60" y="122" font-size="15" text-anchor="middle" fill="var(--minus)" font-weight="700">−0,2 nC</text>
+<text x="220" y="122" font-size="15" text-anchor="middle" fill="var(--plus)" font-weight="700">0,8 nC</text>
+<text x="60" y="40" font-size="12" text-anchor="middle" fill="var(--muted)">r = 10 cm</text>
+<text x="220" y="8" font-size="12" text-anchor="middle" fill="var(--muted)" dy="0">r = 20 cm</text></svg>`;
+const LABEL=`<div class="label-w"><div>WODA ŹRÓDLANA</div><table><tr><td colspan="2" style="color:var(--muted)">kationy w mg/litr</td></tr>
+<tr><td>wapniowy Ca<sup>2+</sup></td><td>320</td></tr><tr><td>magnezowy Mg<sup>2+</sup></td><td>72</td></tr>
+<tr><td>sodowy Na<sup>+</sup></td><td>56</td></tr><tr><td>potasowy K<sup>+</sup></td><td>5,2</td></tr></table></div>`;
+
+const TESTS=[
+{name:'Test 1',title:'To trzeba umieć',qs:[
+ {n:1,type:'single',note:'<b>Uwaga.</b> W zadaniach 1 i 2 wybierz poprawne dokończenia zdań.',stem:'Ciało jest naelektryzowane',
+  opts:[['A','wtedy, gdy ma tyle samo ładunków dodatnich co ujemnych.'],['B','tylko wtedy, gdy ma nadmiar ładunków ujemnych.'],['C','tylko wtedy, gdy ma nadmiar ładunków dodatnich.'],['D','zarówno wtedy, gdy posiada nadmiar ładunków dodatnich, jak i wtedy, gdy ma nadmiar ładunków ujemnych.']],
+  ans:'D',ex:'Ciało jest naelektryzowane, gdy ma <b>przewagę ładunków jednego znaku, obojętnie którego</b>. Nadmiar elektronów oznacza ładunek ujemny, a niedobór elektronów ładunek dodatni. Odpowiedź A opisuje ciało obojętne. B i C są złe przez słowo „tylko”.'},
+ {n:2,type:'single',stem:'Początkowo obojętną elektrycznie szklaną rurkę naelektryzowano dodatnio. W wyniku naelektryzowania rurka',
+  opts:[['A','straciła część protonów.'],['B','straciła część elektronów.'],['C','zyskała dodatkowe protony.'],['D','zyskała dodatkowe elektrony.']],
+  ans:'B',ex:'Protony siedzą w jądrach atomów i <b>nie przemieszczają się</b> przy elektryzowaniu. Przemieszczają się tylko elektrony. Rurka jest dodatnia, bo <b>oddała część elektronów</b>, więc teraz przeważają protony. Zyskanie elektronów (D) dałoby ładunek ujemny.'},
+ {n:3,type:'multi',stem:'Ciała I, II oraz III są naelektryzowane i oddziałują ze sobą tak, jak przedstawiono na poniższym rysunku. <b>Wskaż zdania prawdziwe.</b>',fig:FIG_ARROWS,
+  opts:[['A','Ciała I i II mają ładunki o tym samym znaku.','Fałsz. Strzałki I i II są skierowane do siebie, więc ciała się przyciągają. Przyciągają się ładunki różnoimienne.'],
+        ['B','Ciała I i III mają ładunki jednoimienne.','Prawda. Strzałki I i III są skierowane od siebie, więc ciała się odpychają. Odpychają się ładunki jednoimienne.'],
+        ['C','Ciała II i III będą się wzajemnie przyciągać.','Prawda. II ma znak przeciwny niż I, a III ten sam co I. Zatem II i III mają przeciwne znaki i się przyciągają.']],
+  ans:['B','C'],ex:'Strzałki do siebie oznaczają przyciąganie, czyli różne znaki. Strzałki od siebie oznaczają odpychanie, czyli ten sam znak.'},
+ {n:4,type:'gaps',note:'<b>Uwaga.</b> W zadaniach 4 i 5 wskaż poprawne uzupełnienia zdań.',
+  stem:'Szklaną rurkę potarto jedwabną tkaniną. Następnie rurką dotknięto rozładowanego elektroskopu. Wiadomo, że jedwabna tkanina naelektryzowała się ujemnie.',
+  text:'Szklana rurka w wyniku pocierania jedwabiem [[0]]. Gdy rurkę zetknięto z elektroskopem, elektroskop [[1]].',
+  gaps:[{o:[['A','naelektryzowała się ujemnie'],['B','naelektryzowała się dodatnio'],['C','pozostała elektrycznie obojętna']],a:'B'},
+        {o:[['D','naelektryzował się dodatnio'],['E','naelektryzował się ujemnie'],['F','pozostał elektrycznie obojętny']],a:'D'}],
+  ex:'Przy pocieraniu oba ciała dostają <b>przeciwne</b> ładunki. Jedwab zabrał elektrony, więc jest ujemny, a szkło je straciło, więc jest <b>dodatnie (B)</b>. Przy dotyku ciało obojętne dostaje ładunek <b>tego samego znaku</b>: elektroskop oddaje część elektronów rurce i staje się <b>dodatni (D)</b>.'},
+ {n:5,type:'gaps',stem:'Ujemnie naelektryzowaną rurkę z tworzywa sztucznego zetknięto z nienaelektryzowanym elektroskopem. Następnie elektroskopu dotknięto palcem.',
+  text:'W wyniku zetknięcia rurki z tworzywa sztucznego z elektroskopem listki elektroskopu [[0]]. Podczas zetknięcia rurki z elektroskopem [[1]] przepłynęły [[2]]. Gdy dotknięto elektroskopu palcem, listki elektroskopu [[3]], ponieważ [[4]] przepłynęły [[5]].',
+  gaps:[{o:[['A','zwiększyły wychylenie'],['B','zmniejszyły wychylenie'],['C','nie zmieniły wychylenia']],a:'A'},
+        {o:[['D','elektrony'],['E','protony']],a:'D'},
+        {o:[['F','z rurki na elektroskop'],['G','z elektroskopu na rurkę']],a:'F'},
+        {o:[['A','zwiększyły wychylenie'],['B','zmniejszyły wychylenie'],['C','nie zmieniły wychylenia']],a:'B'},
+        {o:[['D','elektrony'],['E','protony']],a:'D'},
+        {o:[['H','z elektroskopu do ziemi'],['I','z ziemi do elektroskopu']],a:'H'}],
+  ex:'Rurka ma <b>nadmiar elektronów</b>. Przy zetknięciu część z nich przechodzi <b>z rurki na elektroskop (F)</b>. Elektroskop staje się ujemny, listki się odpychają i <b>wychylenie rośnie (A)</b>, bo wcześniej było zerowe. Dotknięcie palcem to uziemienie: nadmiarowe <b>elektrony odpływają do ziemi (H)</b>, elektroskop się rozładowuje i <b>listki opadają (B)</b>. Protony nigdy nie przepływają, za każdym razem to <b>elektrony (D)</b>.'},
+ {n:6,type:'single',stem:'W pracowni szkolnej zgromadzono różne przedmioty, aby przeprowadzić doświadczenie. Wskaż zbiór, który zawiera <b>wyłącznie izolatory</b>.',
+  opts:[['A','miedziany drut, plastikowa rurka, szklanka'],['B','plastikowa linijka, porcelanowy talerzyk, gumka recepturka'],['C','porcelanowy kubek, mosiężna kulka, żelazny gwóźdź'],['D','szklana butelka, gazeta, monety']],
+  ans:'B',ex:'Plastik, porcelana i guma to izolatory. W pozostałych zestawach jest metal, czyli przewodnik: <b>A</b> ma miedziany drut, <b>C</b> mosiężną kulkę i żelazny gwóźdź, <b>D</b> monety.'},
+ {n:7,type:'single',stem:'Wskaż zdanie prawdziwe.',
+  opts:[['A','Zarówno izolatory, jak i przewodniki mają elektrony swobodne.'],['B','Ani izolatory, ani przewodniki nie mają elektronów swobodnych.'],['C','Izolatory mają elektrony swobodne, a przewodniki ich nie mają.'],['D','Izolatory nie mają elektronów swobodnych, a przewodniki je mają.']],
+  ans:'D',ex:'Przewodniki (np. metale) przewodzą właśnie dlatego, że mają <b>elektrony swobodne</b>, które mogą się przemieszczać. W izolatorach elektrony są <b>związane z atomami</b>.'},
+ {n:8,type:'single',stem:'Dwie jednakowe metalowe kule naelektryzowano ujemnie tak, że ładunek na jednej z nich jest trzy razy większy niż na drugiej. Co się stanie z ładunkiem kul po zetknięciu ich ze sobą? Wskaż poprawną odpowiedź.',fig:FIG_BALLS,
+  opts:[['A','Obie kule będą miały taki sam ładunek ujemny.'],['B','Po zetknięciu ładunek na żadnej z kul nie ulegnie zmianie.'],['C','Obie kule zobojętnią się (nie będą naelektryzowane).'],['D','Kula po lewej stronie będzie naelektryzowana ujemnie, natomiast kula po prawej stronie będzie elektrycznie obojętna.']],
+  ans:'A',ex:'Kule są <b>jednakowe i metalowe</b>, więc po zetknięciu ładunek rozkłada się <b>po równo</b>. Suma się nie zmienia (zasada zachowania ładunku). Przykład: −3q i −q dają razem −4q, czyli po <b>−2q na każdej</b>. Obie kule są ujemne i mają taki sam ładunek.'}
+]},
+{name:'Test 2',title:'Dobrze, jeśli to umiesz!',qs:[
+ {n:1,type:'match',stem:'Przyporządkuj informację do sposobu elektryzowania. Dla każdej informacji zaznacz kolumnę (lub kolumny), do której pasuje.',
+  note:'<b>Uwaga.</b> Nie wszystkie informacje należy wykorzystać. Jeśli informacja nie pasuje nigdzie, nie zaznaczaj nic.',
+  cols:[['p','pocieranie'],['d','dotyk'],['i','indukcję']],
+  items:[['I','W wyniku tego sposobu elektryzowania elektrony przepływają między dwoma ciałami.',['p','d'],'Pocieranie i dotyk: w obu elektrony przechodzą z jednego ciała na drugie. Przy indukcji ciała się nie stykają.'],
+   ['II','Ciało nienaelektryzowane uzyskuje ładunek o tym samym znaku co ciało naelektryzowane.',['d'],'Dotyk: po zetknięciu oba ciała mają ten sam znak.'],
+   ['III','Przykładem może być elektryzowanie suchych włosów podczas czesania.',['p'],'Pocieranie: grzebień trze o włosy.'],
+   ['IV','Przykładem może być odchylenie strużki wody w kierunku naelektryzowanego ciała.',['i'],'Indukcja: woda nie dotyka ciała, a mimo to jest przyciągana, bo ładunki w niej się przesuwają.'],
+   ['V','Dwa początkowo elektrycznie obojętne ciała uzyskują ładunki przeciwnych znaków.',['p'],'Pocieranie: jedno ciało zyskuje elektrony (−), a drugie je traci (+).'],
+   ['VI','W wyniku tego sposobu elektryzowania między dwoma ciałami przepływają protony.',[],'Nie pasuje nigdzie: protony nigdy nie przepływają, przemieszczają się tylko elektrony.'],
+   ['VII','W wyniku tego sposobu elektryzowania elektrony przemieszczają się wewnątrz elektrycznie obojętnego przewodnika.',['i'],'Indukcja: elektrony przesuwają się na jedną stronę przewodnika i ładunki się rozsuwają.'],
+   ['VIII','Przykładem może być dotknięcie elektroskopu naelektryzowaną plastikową linijką.',['d'],'Dotyk: linijka dotyka elektroskopu.'],
+   ['IX','Występuje, gdy w pobliżu przewodnika umieścimy (bez jego dotykania) naelektryzowane ciało.',['i'],'Indukcja: zbliżenie bez dotykania.']],
+  ex:'Pocieranie: I, III, V · Dotyk: I, II, VIII · Indukcja: IV, VII, IX · Nie pasuje: VI.'},
+ {n:2,type:'single',info:INFO23,stem:'Wybierz poprawne dokończenie zdania. Jeśli połączymy ze sobą elektroskopy I i II, to',
+  opts:[['A','na elektroskopie I listki zwiększą wychylenie, a na elektroskopie II zmniejszą wychylenie.'],['B','na elektroskopie II listki zwiększą wychylenie, a na elektroskopie I zmniejszą wychylenie.'],['C','na obu elektroskopach listki zmniejszą wychylenie.'],['D','na obu elektroskopach listki zwiększą wychylenie.']],
+  ans:'C',ex:'I ma −4 nC, a II ma +4 nC. Razem: −4 + 4 = <b>0</b>. Po połączeniu nadmiarowe elektrony z I przechodzą na II i ładunki się znoszą. Oba elektroskopy stają się obojętne, więc <b>listki opadają na obu</b>.'},
+ {n:3,type:'multi',info:INFO23,stem:'Wybierz zdania <b>fałszywe</b>.',
+  opts:[['A','Po połączeniu elektroskopów I i III oba będą naelektryzowane ujemnie.','To zdanie jest PRAWDZIWE: −4 + (−2) = −6 nC, czyli po −3 nC na każdym. Oba ujemne.'],
+        ['B','Po połączeniu elektroskopów II i III elektrony przepłyną z elektroskopu II na III.','FAŁSZ: II jest dodatni (niedobór elektronów), III ujemny (nadmiar). Elektrony płyną odwrotnie, z III na II.'],
+        ['C','Gdy dotkniemy każdego z elektroskopów palcem, elektrony odpłyną z każdego z elektroskopów do ziemi.','FAŁSZ: z I i III (ujemnych) elektrony odpłyną do ziemi, ale do dodatniego II elektrony przypłyną z ziemi.'],
+        ['D','Po połączeniu elektroskopów II i III oba będą naelektryzowane dodatnio.','To zdanie jest PRAWDZIWE: +4 + (−2) = +2 nC, czyli po +1 nC na każdym. Oba dodatnie.']],
+  ans:['B','C'],ex:'Uwaga: tu zaznaczasz zdania <b>fałszywe</b>. Licz sumę ładunków: po połączeniu dzieli się ona po równo, a elektrony płyną od ciała z nadmiarem do ciała z niedoborem.'},
+ {n:4,type:'gaps',stem:'Wybierz poprawne uzupełnienia zdań.',
+  text:'Gdy zbliżymy (nie dotykając) naelektryzowany ujemnie balon do elektrycznie obojętnej piłeczki pingpongowej obłożonej folią aluminiową i zawieszonej na nieprzewodzącej nici, piłeczka [[0]]. Stanie się tak, ponieważ [[1]] oraz [[2]].',
+  gaps:[{o:[['A','wychyli się w stronę balonu'],['B','nie zmieni swojego położenia'],['C','odchyli się od balonu w przeciwną stronę']],a:'A'},
+        {o:[['D','piłeczka jest elektrycznie obojętna'],['E','piłeczka naelektryzowała się ujemnie'],['F','piłeczka naelektryzowała się dodatnio']],a:'D'},
+        {o:[['G','na folii aluminiowej bliżej balonu zgromadził się ładunek dodatni, a dalej od balonu – ładunek ujemny'],['H','na folii aluminiowej bliżej balonu zgromadził się ładunek ujemny, a dalej od balonu – ładunek dodatni']],a:'G'}],
+  ex:'Balon nie dotyka piłeczki, więc piłeczka <b>nadal jest obojętna (D)</b>. Ujemny balon odpycha jednak elektrony w folii na dalszą stronę: <b>bliżej balonu jest +, dalej − (G)</b>. To indukcja. Bliższy ładunek + jest przyciągany mocniej, niż dalszy − jest odpychany, więc piłeczka <b>wychyla się w stronę balonu (A)</b>.'},
+ {n:5,type:'multi',stem:`Wiedząc, że wartość ładunku elementarnego to około 1,6 · ${E} C, <b>wybierz zdania prawdziwe</b>.`,
+  opts:[['A','Naelektryzowane ciało może posiadać ładunek elektryczny równy 1,6 · 10<sup>−20</sup> C.','Fałsz. To 1/10 ładunku elementarnego. Ładunek ciała jest zawsze całkowitą wielokrotnością e, bo nie ma „dziesiątej części elektronu”.'],
+        ['B','Naelektryzowane ciało może posiadać ładunek elektryczny równy −1,6 · 10<sup>−17</sup> C.',`Prawda. 1,6·10<sup>−17</sup> : 1,6·${E} = 100, czyli nadmiar 100 elektronów.`],
+        ['C',`Jon, któremu brakuje jednego elektronu, posiada ładunek elektryczny 1,6 · ${E} C.`,'Prawda. Brak jednego elektronu daje ładunek +e.'],
+        ['D','Ciało, które posiada ładunek elektryczny −1,6 · 10<sup>−6</sup> C, ma nadmiar elektronów wynoszący ponad miliard.',`Prawda. 1,6·10<sup>−6</sup> : 1,6·${E} = 10<sup>13</sup> (10 bilionów), a miliard to 10<sup>9</sup>.`],
+        ['E','Ciało, które posiada ładunek elektryczny 1,6 · 10<sup>−15</sup> C, ma niedobór elektronów wynoszący ponad milion.',`Fałsz. 1,6·10<sup>−15</sup> : 1,6·${E} = 10<sup>4</sup> = 10 000, a to mniej niż milion (10<sup>6</sup>).`]],
+  ans:['B','C','D'],ex:'Liczbę elektronów liczymy tak: ładunek ciała podzielony przez e. Przy dzieleniu potęg odejmujemy wykładniki, np. 10<sup>−6</sup> : 10<sup>−19</sup> = 10<sup>13</sup>.'}
+]},
+{name:'Test 3',title:'Świetnie, jeśli to umiesz!',qs:[
+ {n:1,type:'num',stem:'Można udowodnić, że jeżeli ciało złożone z dwóch połączonych cienkim przewodnikiem metalowych kul, znacznie od siebie oddalonych, z których jedna ma promień dwukrotnie większy niż druga, zostanie naładowane pewnym ładunkiem, to na większej kuli zgromadzi się ładunek dwukrotnie większy niż na mniejszej, a drut pozostanie nienaładowany. Początkowo na kulach o promieniach 10 cm oraz 20 cm znajdowały się ładunki −0,2 nC i 0,8 nC (patrz rysunek).<br><b>Jakie ładunki zgromadzą się na każdej z kul, gdy połączymy je cienkim drucikiem?</b>',fig:FIG_SPHERES,
+  note:'<b>Wskazówka.</b> Skorzystaj z zasady zachowania ładunku oraz informacji zawartej w treści zadania. Wpisz liczby z przecinkiem lub kropką (dodatnie bez znaku +).',
+  fields:[{label:'Mała kula (r = 10 cm)',unit:'nC',min:0.195,max:0.205},{label:'Duża kula (r = 20 cm)',unit:'nC',min:0.395,max:0.405}],
+  corr:'mała kula 0,2 nC, duża kula 0,4 nC',
+  ex:'1) Suma ładunków się nie zmienia: −0,2 + 0,8 = <b>0,6 nC</b>.<br>2) Duża kula ma 2 razy więcej niż mała: q + 2q = 0,6 nC, więc 3q = 0,6 nC i q = <b>0,2 nC</b>.<br>Mała kula: <b>0,2 nC</b>, duża: <b>2 · 0,2 = 0,4 nC</b>. Obie są dodatnie.'},
+ {n:'2a',type:'num',stem:'Rysunek przedstawia fragment etykiety z butelki pewnej wody mineralnej.<br><b>a) Czy kation wapniowy ma nadmiar czy niedobór elektronów? Ilu dokładnie?</b>',fig:LABEL,
+  fields:[{label:'Kation wapniowy Ca²⁺ ma',sel:['nadmiar','niedobór'],a:'niedobór'},{label:'Ilu elektronów?',unit:'elektrony',min:2,max:2}],
+  corr:'niedobór 2 elektronów',
+  ex:'Ca<sup>2+</sup>: „plus” oznacza kation, czyli jon dodatni, a dwójka mówi, że <b>brakuje 2 elektronów</b>. Jon dodatni zawsze ma niedobór elektronów.'},
+ {n:'2b',type:'num',stem:`<b>b) Masa jednego jonu sodowego to około 3,82 · 10<sup>−20</sup> mg. Jaki ładunek elektryczny mają wszystkie jony sodowe zawarte w litrze wody źródlanej?</b> Ładunek elementarny: e = 1,6 · ${E} C.`,fig:LABEL,
+  note:'Wpisz wynik w kulombach, w zaokrągleniu do całości (np. 123).',
+  fields:[{label:'Ładunek jonów Na⁺ w 1 litrze',unit:'C',min:225,max:245}],
+  corr:'około 235 C',
+  ex:`1) Liczba jonów: 56 mg : 3,82·10<sup>−20</sup> mg ≈ <b>1,47 · 10<sup>21</sup></b> jonów.<br>2) Każdy Na<sup>+</sup> ma ładunek +e, więc Q = 1,47·10<sup>21</sup> · 1,6·${E} C ≈ <b>235 C</b>.<br>Potęgi: 10<sup>21</sup> · 10<sup>−19</sup> = 10<sup>2</sup>, a 1,47 · 1,6 ≈ 2,35, więc 2,35 · 100 = 235.`},
+ {n:'2c',type:'num',stem:'<b>c) Porównaj ładunek obliczony w podpunkcie b) z ładunkiem, jaki przepływa przez układy telefonu komórkowego podczas jednego cyklu rozładowania baterii (około 5000 C).</b> Ile razy ładunek z baterii jest większy?',
+  fields:[{label:'Ładunek baterii jest większy około',unit:'razy',min:20,max:22.5}],
+  corr:'około 21 razy',
+  ex:'5000 C : 235 C ≈ <b>21</b>. Przy jednym rozładowaniu baterii przez telefon przepływa około 21 razy większy ładunek niż ładunek wszystkich jonów sodu w litrze wody.'}
+]}];
+
+const tabsEl=document.getElementById('tabs'),strip=document.getElementById('strip'),app=document.getElementById('app');
+let cur={t:0,i:0};const res=TESTS.map(T=>T.qs.map(()=>null));let st={};
+function tabs(){tabsEl.innerHTML=TESTS.map((T,k)=>`<button role="tab" id="tab${k}" aria-selected="${k===cur.t}" data-t="${k}">${T.name}<small>${T.title}</small></button>`).join('');
+ tabsEl.querySelectorAll('button').forEach(b=>b.onclick=()=>{cur={t:+b.dataset.t,i:0};show()})}
+function stripR(){const T=TESTS[cur.t];strip.innerHTML=`<h2>${T.name}. ${T.title}</h2>`+T.qs.map((q,k)=>{const r=res[cur.t][k];return `<button class="num ${k===cur.i?'cur':''} ${r===true?'ok':r===false?'bad':''}" data-i="${k}" aria-label="Zadanie ${q.n}">${q.n}</button>`}).join('');
+ strip.querySelectorAll('.num').forEach(b=>b.onclick=()=>{cur.i=+b.dataset.i;show()})}
+function show(){tabs();stripR();const T=TESTS[cur.t];if(cur.i>=T.qs.length)return end();const q=T.qs[cur.i];st={sel:new Set(),done:false};
+ let body='';
+ if(q.type==='single'||q.type==='multi')body=`<div class="opts">${q.opts.map(o=>`<button class="opt ${q.type==='multi'?'multi':''}" data-k="${o[0]}"><b class="k">${o[0]}</b><span>${o[1]}<span class="why" hidden>${o[2]||''}</span></span></button>`).join('')}</div>${q.type==='multi'?'<div class="note">Zaznacz wszystkie pasujące odpowiedzi.</div>':''}`;
+ if(q.type==='gaps')body=`<div class="gaptext">${q.text.replace(/\[\[(\d)\]\]/g,(m,g)=>`<select id="g${cur.t}-${cur.i}-${g}" data-g="${g}"><option value="">— wybierz —</option>${q.gaps[g].o.map(o=>`<option value="${o[0]}">${o[0]}. ${o[1]}</option>`).join('')}</select><span class="fix" data-f="${g}"></span>`)}</div>`;
+ if(q.type==='match')body=`<div>${q.items.map((it,r)=>`<div class="mrow" data-r="${r}"><div class="t"><b>${it[0]}.</b><span>${it[1]}</span></div><div class="chips">${q.cols.map(c=>`<button class="chip" data-r="${r}" data-c="${c[0]}">${c[1]}</button>`).join('')}</div><div class="why" hidden>${it[3]}</div></div>`).join('')}</div>`;
+ if(q.type==='num')body=`<div class="fields">${q.fields.map((f,k)=>`<div class="field"><label for="f${cur.t}-${cur.i}-${k}">${f.label}</label>${f.sel?`<select id="f${cur.t}-${cur.i}-${k}"><option value="">— wybierz —</option>${f.sel.map(s=>`<option>${s}</option>`).join('')}</select>`:`<input id="f${cur.t}-${cur.i}-${k}" inputmode="decimal" autocomplete="off"> <span>${f.unit}</span>`}</div>`).join('')}</div>`;
+ app.innerHTML=`<section class="card">${q.info||''}${q.note&&q.type!=='num'?`<div class="note">${q.note}</div>`:''}
+  <div class="qn"><span class="badge">${String(q.n).replace(/[abc]/,'')}</span><div class="stem">${q.stem}</div></div>
+  ${q.fig?`<div class="fig">${q.fig}</div>`:''}${q.note&&q.type==='num'?`<div class="note">${q.note}</div>`:''}
+  ${body}<div id="fb"></div>
+  <div class="row" id="acts"><button class="btn" id="chk">Sprawdź</button></div></section>`;
+ app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(st.done)return;const k=b.dataset.k;
+  if(q.type==='single'){st.sel.clear();app.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'))}
+  if(st.sel.has(k)){st.sel.delete(k);b.classList.remove('sel')}else{st.sel.add(k);b.classList.add('sel')}});
+ app.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{if(st.done)return;b.classList.toggle('sel')});
+ document.getElementById('chk').onclick=()=>check(q);
+}
+const num=s=>parseFloat(String(s).replace(',','.').replace(/\s/g,''));
+function check(q){st.done=true;let ok=true,corr='';
+ if(q.type==='single'||q.type==='multi'){const ans=[].concat(q.ans);
+  app.querySelectorAll('.opt').forEach(b=>{const k=b.dataset.k,s=st.sel.has(k),a=ans.includes(k);b.disabled=true;b.classList.remove('sel');
+   if(a&&s)b.classList.add('ok');else if(a){b.classList.add('miss');ok=false}else if(s){b.classList.add('bad');ok=false}
+   if(q.type==='multi')b.querySelector('.why').hidden=false});
+  if(st.sel.size===0)ok=false;corr=ans.join(' i ');}
+ if(q.type==='gaps'){q.gaps.forEach((g,k)=>{const s=app.querySelector(`select[data-g="${k}"]`);s.disabled=true;
+   if(s.value===g.a)s.classList.add('ok');else{ok=false;s.classList.add('bad');app.querySelector(`[data-f="${k}"]`).textContent=` → ${g.a}`}});
+  corr=q.gaps.map(g=>g.a).join(', ');}
+ if(q.type==='match'){q.items.forEach((it,r)=>{let rowOk=true;app.querySelectorAll(`.chip[data-r="${r}"]`).forEach(c=>{const s=c.classList.contains('sel'),a=it[2].includes(c.dataset.c);c.disabled=true;c.classList.remove('sel');
+    if(a&&s)c.classList.add('ok');else if(a){c.classList.add('miss');rowOk=false}else if(s){c.classList.add('bad');rowOk=false}});
+   if(!rowOk){ok=false;app.querySelector(`.mrow[data-r="${r}"] .why`).hidden=false}});corr='';}
+ if(q.type==='num'){q.fields.forEach((f,k)=>{const el=document.getElementById(`f${cur.t}-${cur.i}-${k}`);el.disabled=true;let good;
+   if(f.sel)good=el.value===f.a;else{const v=num(el.value);good=!isNaN(v)&&v>=f.min&&v<=f.max}
+   el.classList.add(good?'ok':'bad');if(!good)ok=false});corr=q.corr;}
+ res[cur.t][cur.i]=ok;stripR();
+ const last=cur.i===TESTS[cur.t].qs.length-1;
+ document.getElementById('fb').innerHTML=`<div class="expl ${ok?'':'no'}"><strong>${ok?'Dobrze!':'Niestety źle.'}</strong>${!ok&&corr?`<span class="corr">Prawidłowa odpowiedź: ${corr}</span>`:''}${!ok&&q.type==='match'?'<span class="corr">Pod błędnymi informacjami jest wyjaśnienie. Linią przerywaną zaznaczono kolumny, których zabrakło.</span>':''}<b>Dlaczego?</b> ${q.ex}</div>`;
+ document.getElementById('acts').innerHTML=`<button class="btn ghost" id="again">Spróbuj jeszcze raz</button><button class="btn" id="next">${last?'Zobacz wynik':'Następne zadanie'}</button>`;
+ document.getElementById('again').onclick=()=>{res[cur.t][cur.i]=null;show()};
+ document.getElementById('next').onclick=()=>{cur.i++;show();window.scrollTo({top:0})};
+ document.getElementById('fb').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function end(){const T=TESTS[cur.t],r=res[cur.t],good=r.filter(x=>x===true).length,n=T.qs.length;
+ const bad=T.qs.map((q,k)=>[q,k]).filter(([q,k])=>r[k]!==true);
+ app.innerHTML=`<section class="card"><p class="score">${good}<small> / ${n}</small></p>
+  <p class="verdict">${good===n?'Komplet! Ten test masz opanowany.':good>=n*0.7?'Dobrze. Popraw jeszcze zadania poniżej.':'Wróć do zadań poniżej i przeczytaj wyjaśnienia.'}</p>
+  ${bad.length?`<div class="strip">${bad.map(([q,k])=>`<button class="num bad" data-i="${k}">${q.n}</button>`).join('')}</div><p class="sub">Dotknij numeru, żeby wrócić do zadania.</p>`:''}
+  <div class="row"><button class="btn ghost" id="rst">Ten test od nowa</button>${cur.t<TESTS.length-1?`<button class="btn" id="nxt">${TESTS[cur.t+1].name} →</button>`:''}</div></section>`;
+ app.querySelectorAll('.num').forEach(b=>b.onclick=()=>{cur.i=+b.dataset.i;show()});
+ document.getElementById('rst').onclick=()=>{res[cur.t]=T.qs.map(()=>null);cur.i=0;show()};
+ const nx=document.getElementById('nxt');if(nx)nx.onclick=()=>{cur={t:cur.t+1,i:0};show()};
+}
+show();
+</script>
+</body></html>
