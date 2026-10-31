@@ -1,0 +1,212 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quiz z elektrostatyki</title>
+<style>
+/* Layout: one narrow column, a notebook-grid page; mode tabs on top, one card at a time */
+:root{
+  --bg:#eef2f6; --grid:#dbe3ec; --card:#ffffff; --fg:#1b2533; --muted:#5d6b7d; --line:#cfd8e3;
+  --plus:#d23b3b; --minus:#2f7fd1; --ok:#1f8a4c; --okbg:#e3f4ea; --bad:#c2361f; --badbg:#fbe6e1;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121821; --grid:#1b2430; --card:#1a2330; --fg:#e6edf5; --muted:#9aa8ba; --line:#2c394a;
+  --plus:#ff6b6b; --minus:#5aa9ff; --ok:#4cd08a; --okbg:#173326; --bad:#ff7a63; --badbg:#3a1d18; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121821; --grid:#1b2430; --card:#1a2330; --fg:#e6edf5; --muted:#9aa8ba; --line:#2c394a;
+  --plus:#ff6b6b; --minus:#5aa9ff; --ok:#4cd08a; --okbg:#173326; --bad:#ff7a63; --badbg:#3a1d18; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:17px/1.5 var(--body);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:16px}
+header{display:flex;align-items:center;gap:12px}
+.charges{display:flex;gap:4px;flex:none}
+.dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 16px/1 var(--display)}
+.dot.p{background:var(--plus)} .dot.m{background:var(--minus)}
+h1{font:800 26px/1.1 var(--display);margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:14px;margin:2px 0 0}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs button{border:0;background:transparent;color:var(--muted);font:700 16px var(--body);padding:10px;border-radius:9px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--plus),var(--minus));transition:width .3s}
+.tag{font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--minus)}
+.q{font:600 21px/1.3 var(--display);margin:0;text-wrap:balance}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{text-align:left;font:inherit;color:var(--fg);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.opt b{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:13px}
+.opt:hover:not(:disabled){border-color:var(--minus)}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--okbg)} .opt.ok b{border-color:var(--ok);background:var(--ok);color:#fff}
+.opt.bad{border-color:var(--bad);background:var(--badbg)} .opt.bad b{border-color:var(--bad);background:var(--bad);color:#fff}
+.expl{border-left:4px solid var(--ok);padding:8px 12px;background:var(--okbg);border-radius:0 10px 10px 0;font-size:16px}
+.expl.no{border-color:var(--bad);background:var(--badbg)}
+.expl strong{display:block}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{font:700 16px var(--body);border:0;border-radius:12px;padding:12px 18px;cursor:pointer;background:var(--fg);color:var(--bg);flex:1}
+.btn.ghost{background:transparent;color:var(--fg);border:2px solid var(--line)}
+button:focus-visible{outline:3px solid var(--minus);outline-offset:2px}
+.score{font:800 56px/1 var(--display);font-variant-numeric:tabular-nums;margin:0}
+.score small{font-size:24px;color:var(--muted)}
+.verdict{font:600 20px var(--display);margin:0}
+.wrong{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:15px}
+.wrong span{color:var(--ok);font-weight:700}
+.flash{min-height:230px;perspective:1000px;cursor:pointer;border:0;background:none;padding:0;font:inherit;color:inherit;width:100%}
+.inner{position:relative;min-height:230px;transition:transform .45s;transform-style:preserve-3d}
+.flash.on .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;border:2px dashed var(--line);padding:20px;display:flex;flex-direction:column;justify-content:center;gap:10px;text-align:center}
+.face.back{transform:rotateY(180deg);border-style:solid;border-color:var(--minus);text-align:left;font-size:17px}
+.term{font:800 28px/1.15 var(--display)}
+.hint{font-size:13px;color:var(--muted)}
+.pile{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.inner,.bar i{transition:none}}
+</style></head><body>
+
+<div class="wrap">
+  <header>
+    <div class="charges"><span class="dot p">+</span><span class="dot m">−</span></div>
+    <div><h1>Elektrostatyka</h1><p class="sub">Powtórzenie przed sprawdzianem · podręcznik str. 58–59</p></div>
+  </header>
+  <div class="tabs" role="tablist">
+    <button id="tabQuiz" role="tab" aria-selected="true">Quiz</button>
+    <button id="tabFlash" role="tab" aria-selected="false">Fiszki z pojęć</button>
+  </div>
+  <main id="app"></main>
+</div>
+
+<script>
+const Q=[
+ {t:"Ładunki",q:"Ile jest rodzajów ładunków elektrycznych?",a:["Dwa: dodatnie i ujemne","Jeden: ujemny","Trzy: dodatnie, ujemne i obojętne","Cztery"],e:"Istnieją dwa rodzaje ładunków: dodatnie i ujemne. „Obojętny” to brak ładunku, a nie trzeci rodzaj."},
+ {t:"Ładunki",q:"Ładunki jednoimienne to ładunki…",a:["tego samego znaku","przeciwnych znaków","o tej samej masie","tylko dodatnie"],e:"Jednoimienne = ten sam znak (+ i + albo − i −). Różnoimienne = przeciwne znaki."},
+ {t:"Ładunki",q:"Co się dzieje z dwoma ciałami naelektryzowanymi różnoimiennie?",a:["Przyciągają się","Odpychają się","Nic się nie dzieje","Zobojętniają się bez dotykania"],e:"Różnoimienne się przyciągają, jednoimienne się odpychają."},
+ {t:"Ładunki",q:"Dwie kulki naelektryzowane ujemnie zbliżamy do siebie. Co zobaczymy?",a:["Odpychają się","Przyciągają się","Jedna staje się dodatnia","Kulki pozostają w spoczynku"],e:"Obie mają ten sam znak (−), więc są jednoimienne i się odpychają."},
+ {t:"Atom",q:"Z czego zbudowany jest atom?",a:["Z jądra i krążących wokół niego elektronów","Tylko z protonów","Z jąder i neutronów krążących wokół elektronu","Z samych elektronów"],e:"Atom = jądro w środku + elektrony krążące wokół jądra."},
+ {t:"Atom",q:"Co tworzy jądro atomu?",a:["Protony i neutrony","Protony i elektrony","Elektrony i neutrony","Tylko elektrony"],e:"Jądro tworzą protony i neutrony. Elektrony są poza jądrem."},
+ {t:"Atom",q:"Gdzie skupiona jest prawie cała masa atomu?",a:["W jądrze","W elektronach","Równo w całym atomie","Na powłoce walencyjnej"],e:"Jądro skupia prawie całą masę atomu. Elektrony są bardzo lekkie."},
+ {t:"Atom",q:"Jaki ładunek ma neutron?",a:["Jest elektrycznie obojętny","Dodatni","Ujemny","Zależy od atomu"],e:"Proton: +, elektron: −, neutron: brak ładunku (obojętny). Łatwo zapamiętać: NEUtron = NEUtralny."},
+ {t:"Atom",q:"Jaki ładunek ma proton?",a:["Dodatni","Ujemny","Obojętny","Raz dodatni, raz ujemny"],e:"Protony mają ładunek dodatni."},
+ {t:"Atom",q:"W zwykłych warunkach atom jest…",a:["elektrycznie obojętny","naładowany dodatnio","naładowany ujemnie","dipolem"],e:"Atom ma tyle samo protonów (+) co elektronów (−), więc ładunki się równoważą i atom jest obojętny."},
+ {t:"Jony",q:"Kation to…",a:["jon dodatni, który powstał po oderwaniu elektronów","jon ujemny, który przyjął elektrony","atom bez neutronów","obojętny atom"],e:"Kation = jon dodatni. Atom traci elektrony (−), więc przeważają protony (+)."},
+ {t:"Jony",q:"Atom przyjął na powłokę walencyjną dwa elektrony. Stał się…",a:["anionem (jonem ujemnym)","kationem (jonem dodatnim)","nadal obojętnym atomem","neutronem"],e:"Przybyło elektronów (−), więc atom ma przewagę ładunku ujemnego. To anion."},
+ {t:"Ładunek",q:"Ile wynosi ładunek elementarny e?",a:["1,602 · 10⁻¹⁹ C","1,602 · 10¹⁹ C","1 C","−1,602 · 10⁻¹⁹ C"],e:"e = 1,602 · 10⁻¹⁹ C, czyli ładunek protonu. Wykładnik jest ujemny, bo to bardzo mała liczba."},
+ {t:"Ładunek",q:"Ile wynosi ładunek elektronu?",a:["−e, czyli −1,602 · 10⁻¹⁹ C","+e, czyli 1,602 · 10⁻¹⁹ C","0 C","−1 C"],e:"Elektron ma ładunek równy −e, czyli −1,602 · 10⁻¹⁹ C. Ta sama wartość co proton, ale znak minus."},
+ {t:"Ładunek",q:"Jaka jest jednostka ładunku elektrycznego?",a:["Kulomb (C)","Wolt (V)","Amper (A)","Niuton (N)"],e:"Ładunek mierzymy w kulombach, symbol C."},
+ {t:"Elektryzowanie",q:"Elektryzowanie to…",a:["gromadzenie przez ciało ładunku elektrycznego jednego znaku","przepływ prądu przez przewodnik","oddawanie ładunku do ziemi","rozpad atomu"],e:"Ciało jest naelektryzowane, gdy zgromadzi ładunek jednego znaku (przewagę + albo −)."},
+ {t:"Elektryzowanie",q:"Co się dzieje podczas elektryzowania przez pocieranie?",a:["Elektrony przechodzą z jednego ciała na drugie: jedno staje się −, drugie +","Protony przechodzą z ciała na ciało","Oba ciała stają się dodatnie","Oba ciała stają się ujemne"],e:"Przy pocieraniu przemieszczają się elektrony. Ciało, które je zyskało, jest −, a to, które straciło, jest +. Ciała mają przeciwne znaki."},
+ {t:"Elektryzowanie",q:"Naelektryzowane ujemnie ciało dotykamy do ciała obojętnego. Co się dzieje?",a:["Elektrony płyną z ciała ujemnego do obojętnego i oba są ujemne","Elektrony płyną z ciała obojętnego do ujemnego","Protony płyną do ciała obojętnego","Ciało obojętne staje się dodatnie"],e:"Przy dotyku nadmiar elektronów przechodzi na ciało obojętne. Po dotyku oba ciała mają ten sam znak (−)."},
+ {t:"Elektryzowanie",q:"Naelektryzowane dodatnio ciało dotykamy do ciała obojętnego. Co się dzieje?",a:["Elektrony przechodzą z ciała obojętnego do dodatniego; oba ciała są dodatnie","Protony przechodzą do ciała obojętnego","Elektrony przechodzą z ciała dodatniego do obojętnego","Oba ciała stają się ujemne"],e:"Przemieszczają się zawsze elektrony, nie protony. Ciało obojętne oddaje elektrony, więc też staje się dodatnie. Przy dotyku znaki są takie same."},
+ {t:"Elektryzowanie",q:"Na czym polega elektryzowanie przez indukcję?",a:["Na zbliżeniu naelektryzowanego ciała do obojętnego, bez dotykania","Na pocieraniu dwóch ciał","Na zetknięciu dwóch ciał","Na połączeniu ciała z ziemią"],e:"Indukcja = przybliżenie (bez dotyku). W ciele obojętnym ładunki się rozsuwają."},
+ {t:"Elektryzowanie",q:"Do metalowej kulki zbliżamy pałeczkę naelektryzowaną ujemnie. Jaki ładunek pojawi się po stronie kulki bliżej pałeczki?",a:["Dodatni","Ujemny","Żaden","Najpierw ujemny, potem znika"],e:"Elektrony w kulce są odpychane przez pałeczkę (−) i uciekają na drugą stronę. Bliższa strona ma przewagę +, dalsza −."},
+ {t:"Elektryzowanie",q:"Co przemieszcza się w metalu podczas indukcji?",a:["Swobodne elektrony","Protony","Całe jądra atomów","Neutrony"],e:"W metalach przemieszczają się swobodne elektrony. W izolatorach powłoki elektronowe tylko się przesuwają względem jąder."},
+ {t:"Elektryzowanie",q:"Co dzieje się w izolatorze podczas indukcji?",a:["Powłoki elektronowe przesuwają się względem jąder atomów","Swobodne elektrony przepływają na drugi koniec","Jądra opuszczają atomy","Nic"],e:"W izolatorze elektrony są związane z atomami. Mogą się tylko trochę przesunąć, więc jądro nie jest już w środku atomu."},
+ {t:"Dipol",q:"Dipol elektryczny to…",a:["dwa równe co do wartości, różnoimienne ładunki w niewielkiej odległości od siebie","dwa ładunki dodatnie obok siebie","atom bez elektronów","przewodnik połączony z ziemią"],e:"Dipol: dwa ładunki o tej samej wartości, przeciwnych znakach, blisko siebie. Przykład z podręcznika: cząsteczka wody."},
+ {t:"Dipol",q:"Który przykład dipola jest w podręczniku?",a:["Cząsteczka wody","Atom helu","Kawałek miedzi","Elektroskop"],e:"Cząsteczka wody ma stronę dodatnią (wodory, H) i ujemną (tlen, O)."},
+ {t:"Przewodniki",q:"Przewodnik to materiał, w którym…",a:["zachodzi swobodny przepływ ładunków elektrycznych","nie zachodzi swobodny przepływ ładunków","nie ma elektronów","są tylko neutrony"],e:"W przewodniku ładunki mogą swobodnie się przemieszczać."},
+ {t:"Przewodniki",q:"Które z ciał to przewodnik?",a:["Miedziany drut","Szklana pałeczka","Plastikowa linijka","Gumowa rękawica"],e:"Wszystkie metale są przewodnikami. Szkło, plastik i guma to izolatory."},
+ {t:"Przewodniki",q:"Dlaczego metale przewodzą ładunek?",a:["Mają elektrony swobodne, które mogą się przemieszczać","Mają więcej protonów","Nie mają jąder","Ich elektrony są mocno związane z atomami"],e:"W metalach niektóre elektrony (swobodne) mogą się poruszać. W izolatorach elektrony są związane z atomami."},
+ {t:"Przewodniki",q:"Izolator to materiał, w którym…",a:["nie zachodzi swobodny przepływ ładunków","ładunki płyną swobodnie","są swobodne elektrony","nie ma atomów"],e:"W izolatorze elektrony są związane z atomami i nie mogą się swobodnie przemieszczać."},
+ {t:"Zasady",q:"Zasada zachowania ładunku mówi, że w układzie izolowanym elektrycznie…",a:["całkowity ładunek (suma + i −) jest stały","ładunek zawsze rośnie","ładunki znikają po czasie","wszystkie ciała są obojętne"],e:"Ładunek nie znika i nie powstaje z niczego. Może tylko przejść z ciała na ciało, a suma zostaje taka sama."},
+ {t:"Zasady",q:"Pocieramy obojętną laskę o obojętną szmatkę. Laska ma potem ładunek −5 jednostek. Jaki ładunek ma szmatka?",a:["+5 jednostek","−5 jednostek","0","+10 jednostek"],e:"Zasada zachowania ładunku: na początku suma = 0, więc po pocieraniu też 0. −5 + (+5) = 0."},
+ {t:"Przyrządy",q:"Do czego służy elektroskop?",a:["Do stwierdzenia, czy ciało jest naelektryzowane","Do mierzenia masy atomu","Do uziemiania ciał","Do wytwarzania prądu"],e:"Elektroskop pokazuje, czy ciało jest naelektryzowane."},
+ {t:"Zasady",q:"Kiedy następuje zobojętnienie ciała naelektryzowanego?",a:["Gdy otrzyma ładunek tej samej wartości, ale przeciwnego znaku, lub odda swój ładunek","Gdy otrzyma więcej ładunku tego samego znaku","Gdy zbliżymy je do innego ciała","Gdy je pocieramy"],e:"Zobojętnienie: ładunek +q zobojętni się ładunkiem −q (lub ciało odda swój ładunek innemu ciału)."},
+ {t:"Zasady",q:"Uziemienie to…",a:["przepływ ładunku między ciałem a ziemią przez łączący je przewodnik","zakopanie ciała w ziemi","elektryzowanie przez pocieranie o ziemię","odpychanie się ładunków"],e:"Uziemienie: ciało łączymy przewodnikiem z ziemią i ładunek przepływa, przez co ciało przestaje być naelektryzowane."}
+];
+const F=[
+ ["Ładunki jednoimienne","Ładunki tego samego znaku (+ i + albo − i −). Odpychają się."],
+ ["Ładunki różnoimienne","Ładunki przeciwnych znaków (+ i −). Przyciągają się."],
+ ["Atom","Zbudowany z jądra i krążących wokół niego elektronów. Normalnie jest elektrycznie obojętny."],
+ ["Jądro atomu","Tworzą je protony i neutrony. Skupia prawie całą masę atomu."],
+ ["Proton / elektron / neutron","Proton: ładunek dodatni. Elektron: ładunek ujemny. Neutron: elektrycznie obojętny."],
+ ["Kation","Jon dodatni. Powstaje, gdy z powłoki atomu zostaną oderwane elektrony."],
+ ["Anion","Jon ujemny. Powstaje, gdy atom przyjmie elektrony na powłokę walencyjną."],
+ ["Ładunek elementarny","Ładunek równy ładunkowi protonu: e = 1,602 · 10⁻¹⁹ C. Elektron ma −e."],
+ ["Kulomb","Jednostka ładunku elektrycznego, symbol 1 C."],
+ ["Elektryzowanie","Gromadzenie przez ciało ładunku elektrycznego jednego znaku."],
+ ["Elektryzowanie przez pocieranie","Elektrony przechodzą z jednego ciała na drugie. Jedno staje się −, drugie +. Znaki przeciwne."],
+ ["Elektryzowanie przez dotyk","Zetknięcie ciała naelektryzowanego z obojętnym. Po dotyku oba mają ten sam znak."],
+ ["Elektryzowanie przez indukcję","Zbliżenie (bez dotyku) ciała naelektryzowanego do obojętnego. Ładunki w ciele obojętnym się rozsuwają: bliżej znak przeciwny, dalej ten sam."],
+ ["Dipol elektryczny","Dwa równe co do wartości, różnoimienne ładunki w niewielkiej odległości od siebie. Np. cząsteczka wody."],
+ ["Przewodnik","Ciało, w którym zachodzi swobodny przepływ ładunków. Np. wszystkie metale (mają elektrony swobodne)."],
+ ["Izolator","Ciało, w którym nie zachodzi swobodny przepływ ładunków. Elektrony są związane z atomami."],
+ ["Zasada zachowania ładunku","W układzie izolowanym elektrycznie całkowity ładunek (suma + i −) jest stały."],
+ ["Elektroskop","Przyrząd, który pozwala stwierdzić, czy ciało jest naelektryzowane."],
+ ["Zobojętnienie","Ciało otrzymuje ładunek tej samej wartości, ale przeciwnego znaku, albo oddaje swój ładunek innemu ciału."],
+ ["Uziemienie","Przepływ ładunku między ciałem a ziemią przez łączący je przewodnik."]
+];
+const app=document.getElementById('app');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>s;
+let S={pool:[],i:0,score:0,wrong:[],answered:false,opts:[]};
+function startQuiz(list){S={pool:shuffle(list||Q),i:0,score:0,wrong:[],answered:false};renderQ()}
+function renderQ(){
+  const it=S.pool[S.i];S.answered=false;
+  S.opts=shuffle(it.a.map((t,k)=>({t,ok:k===0})));
+  const n=S.pool.length;
+  app.innerHTML=`<section class="card">
+   <div class="meta"><span>Pytanie ${S.i+1} z ${n}</span><span>Punkty: ${S.score}</span></div>
+   <div class="bar"><i style="width:${S.i/n*100}%"></i></div>
+   <div class="tag">${it.t}</div>
+   <h2 class="q">${it.q}</h2>
+   <div class="opts">${S.opts.map((o,k)=>`<button class="opt" id="o${k}" data-k="${k}"><b>${'ABCD'[k]}</b><span>${o.t}</span></button>`).join('')}</div>
+   <div id="fb"></div></section>`;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>pick(+b.dataset.k));
+}
+function pick(k){
+  if(S.answered)return;S.answered=true;
+  const it=S.pool[S.i],good=S.opts[k].ok;
+  app.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(S.opts[j].ok)b.classList.add('ok');else if(j===k)b.classList.add('bad')});
+  if(good)S.score++;else S.wrong.push(it);
+  const last=S.i===S.pool.length-1;
+  document.getElementById('fb').innerHTML=`<div class="expl ${good?'':'no'}"><strong>${good?'Dobrze!':'Źle. Poprawna odpowiedź jest na zielono.'}</strong>${it.e}</div>
+   <div class="row" style="margin-top:12px"><button class="btn" id="next">${last?'Zobacz wynik':'Dalej'}</button></div>`;
+  const nb=document.getElementById('next');nb.focus({preventScroll:true});
+  nb.onclick=()=>{if(last)renderEnd();else{S.i++;renderQ();window.scrollTo({top:0})}};
+}
+function grade(p){if(p>=.91)return'Celujący poziom. Jesteś gotowy!';if(p>=.75)return'Bardzo dobrze. Powtórz błędne i będzie komplet.';if(p>=.5)return'Nieźle, ale jeszcze trochę nauki. Przejrzyj fiszki.';return'Trzeba jeszcze popracować. Zacznij od fiszek, potem wróć do quizu.'}
+function renderEnd(){
+  const n=S.pool.length,p=S.score/n;let best=0;
+  try{best=+localStorage.getItem('best')||0;if(p>best){localStorage.setItem('best',p);}}catch(e){}
+  app.innerHTML=`<section class="card">
+   <div class="bar"><i style="width:100%"></i></div>
+   <p class="score">${S.score}<small> / ${n}</small></p>
+   <p class="verdict">${grade(p)}</p>
+   ${best&&n===Q.length?`<p class="sub">Twój najlepszy wynik: ${Math.round(Math.max(best,p)*100)}%</p>`:''}
+   ${S.wrong.length?`<div><div class="tag" style="margin-bottom:8px">Do powtórki</div><ol class="wrong">${S.wrong.map(w=>`<li>${w.q}<br><span>${w.a[0]}</span></li>`).join('')}</ol></div>`:''}
+   <div class="row">${S.wrong.length?`<button class="btn" id="rw">Powtórz błędne (${S.wrong.length})</button>`:''}<button class="btn ghost" id="ra">Cały quiz od nowa</button></div></section>`;
+  const w=S.wrong.slice();
+  if(w.length)document.getElementById('rw').onclick=()=>startQuiz(w);
+  document.getElementById('ra').onclick=()=>startQuiz();
+  window.scrollTo({top:0});
+}
+let FC={deck:[],i:0,know:0};
+function startFlash(deck){FC={deck:shuffle(deck||F),i:0,know:0,again:[]};renderF()}
+function renderF(){
+  if(FC.i>=FC.deck.length){
+    app.innerHTML=`<section class="card"><p class="verdict">Przejrzane! Umiesz ${FC.know} z ${FC.deck.length}.</p>
+     <div class="row">${FC.again.length?`<button class="btn" id="fa">Jeszcze raz te ${FC.again.length}</button>`:''}<button class="btn ghost" id="fr">Wszystkie od nowa</button></div>
+     <p class="sub">Teraz sprawdź się w zakładce Quiz.</p></section>`;
+    const a=FC.again.slice();if(a.length)document.getElementById('fa').onclick=()=>startFlash(a);
+    document.getElementById('fr').onclick=()=>startFlash();return;
+  }
+  const [t,d]=FC.deck[FC.i];
+  app.innerHTML=`<section class="card">
+   <div class="meta"><span>Fiszka ${FC.i+1} z ${FC.deck.length}</span><span class="pile">Umiem: ${FC.know}</span></div>
+   <div class="bar"><i style="width:${FC.i/FC.deck.length*100}%"></i></div>
+   <button class="flash" id="fl" aria-label="Odwróć fiszkę"><div class="inner">
+     <div class="face"><div class="term">${t}</div><div class="hint">Powiedz definicję na głos, potem dotknij, żeby sprawdzić</div></div>
+     <div class="face back"><div class="tag">${t}</div><div>${d}</div></div>
+   </div></button>
+   <div class="row"><button class="btn ghost" id="no">Jeszcze nie umiem</button><button class="btn" id="yes">Umiem</button></div></section>`;
+  const fl=document.getElementById('fl');fl.onclick=()=>fl.classList.toggle('on');
+  document.getElementById('yes').onclick=()=>{FC.know++;FC.i++;renderF()};
+  document.getElementById('no').onclick=()=>{FC.again.push(FC.deck[FC.i]);FC.i++;renderF()};
+}
+const tq=document.getElementById('tabQuiz'),tf=document.getElementById('tabFlash');
+tq.onclick=()=>{tq.setAttribute('aria-selected','true');tf.setAttribute('aria-selected','false');startQuiz()};
+tf.onclick=()=>{tf.setAttribute('aria-selected','true');tq.setAttribute('aria-selected','false');startFlash()};
+startQuiz();
+</script>
+</body></html>
